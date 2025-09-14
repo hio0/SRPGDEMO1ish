@@ -8,9 +8,7 @@ public class FightManager : MonoBehaviour
 {
     public bool isOK;
 
-    public RectTransform objectiveBg;
     public TMP_Text objectiveT;
-    public RectTransform chapterBG;
     public TMP_Text chapterT;
 
     public int turnCount;
@@ -18,20 +16,28 @@ public class FightManager : MonoBehaviour
 
     public GameObject PopupP;
 
+    RectTransform rec;
     public int watchCharacter;
+    public int MaxCharacter;
     public List<GameObject> characterList;
 
     public bool isEvent;
     public GameObject eventBg;
     public int eventCount;
     public TMP_Text eventT;
+    public float evnum;
+
+    int actnum;
+    public int ActionCount;
+    public TMP_Text actionT;
 
     private void OnEnable()
     {
         isOK = true;
-        ++turnCount;
         watchCharacter = 0;
-        PopupP.SetActive(false);
+        //characterList = new List<GameObject>(MaxCharacter);
+
+        PassTurn();
     }
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
@@ -46,46 +52,10 @@ public class FightManager : MonoBehaviour
         if(isOK)
         {
             // 목표
-            int howob;
-            if(objectiveT.text.Length >= 10)
-            {
-                howob = 5;
-            }
-            else if (objectiveT.text.Length <= 8 && objectiveT.text.Length > 6)
-            {
-                howob = 4;
-            }
-            else if (objectiveT.text.Length <= 5 && objectiveT.text.Length > 0)
-            {
-                howob = 2;
-            }
-            else
-            {
-                howob = 1;
-            }
-            float obj = objectiveT.text.Length * howob;
-            objectiveBg.anchoredPosition = new Vector2(-obj, objectiveBg.anchoredPosition.y);
+            
 
             // 챕터
-            int howcha;
-            if (chapterT.text.Length >= 10)
-            {
-                howcha = 5;
-            }
-            else if (chapterT.text.Length <= 8 && chapterT.text.Length > 6)
-            {
-                howcha = 4;
-            }
-            else if (chapterT.text.Length <= 5 && chapterT.text.Length > 0)
-            {
-                howcha = 2;
-            }
-            else
-            {
-                howcha = 1;
-            }
-            float cha = chapterT.text.Length * howcha;
-            chapterBG.anchoredPosition = new Vector2(-cha, chapterBG.anchoredPosition.y);
+            
 
             // 턴
             turnT.text = turnCount + "턴";
@@ -96,7 +66,8 @@ public class FightManager : MonoBehaviour
             }
 
             // 캐릭터
-            characterList[watchCharacter].transform.localScale = new Vector2(120f, 120f);
+            rec = characterList[watchCharacter].GetComponent<RectTransform>();
+            rec.sizeDelta = new Vector2(420f, 100f);
 
             float scroll = Input.GetAxis("Mouse ScrollWheel");
             if (scroll > 0f)
@@ -134,12 +105,35 @@ public class FightManager : MonoBehaviour
                 eventBg.SetActive(false);
             }
 
-            eventT.text = "다음 이벤트까지: " + eventCount + "턴";
+            if(evnum <= eventCount/3)
+            {
+                eventT.text = "다음 이벤트까지: " + "<color=#E01314>" + evnum.ToString() + "턴" + "</color>";
+            }
+            else
+            {
+                eventT.text = "다음 이벤트까지: " + evnum.ToString() + "턴";
+            }
+
+            // 액션
+            actionT.text = "남은 행동 개수: " + "<size=50>" + ActionCount + "</size>";
+            if (actnum <= ActionCount/3)
+            {
+                actionT.text = "남은 행동 개수: " + "<color=#E01314>" + "<size=50>" + actnum.ToString() + "</size>" + "</color>";
+            }
+            else
+            {
+                actionT.text = "남은 행동 개수: " + "<size=50>" + actnum.ToString() + "</size>";
+            }
+
         }
 
-        if(PopupP.activeSelf == true)
+        if (PopupP.activeSelf == true)
         {
             isOK = false;
+            if(Input.GetKeyDown(KeyCode.KeypadEnter) || Input.GetKeyDown(KeyCode.Space))
+            {
+                PassTurn();
+            }
         }
         else if (PopupP.activeSelf == false)
         {
@@ -149,10 +143,10 @@ public class FightManager : MonoBehaviour
 
     void characorRe()
     {
-        characterList[watchCharacter].transform.localScale = new Vector2(100f, 100f);
+        rec.sizeDelta = new Vector2(350f, 85f);
     }
 
-    void RUPassTurn() // 턴 넘기겠습니까?
+    public void RUPassTurn() // 턴 넘기겠습니까?
     {
         PopupP.SetActive(true);
     }
@@ -160,6 +154,13 @@ public class FightManager : MonoBehaviour
     public void PassTurn() // 턴 넘기기
     {
         ++turnCount;
+
+        evnum = eventCount - turnCount;
+        if(evnum <= 0)
+        {
+            evnum = 0;
+            isEvent = false;
+        }
         NOPass();
     }
 
